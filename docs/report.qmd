@@ -1,0 +1,37 @@
+---
+title: "Predictive model for Coronary Disease"
+subtitle: "Scientific Programming Final Project"
+authors:
+  - Blai Crespo Selma
+  - David Hidalgo Fàbregas
+  - Miriam Iturralde Aguiló
+  - Adam Koershuis i García
+  - Pablo Longán Gasol
+  - Aina Mas Tena
+  - Marta Meroño Rafel
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    toc-title: "Index"
+    include-in-header: 
+      text:
+        \usepackage{tocloft}
+        \renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+---
+
+## Objective of the project
+
+The primary objective of this project is to develop a robust and accurate predictive model to assess the risk of developing coronary heart disease (CHD) over a ten-year period, based on specific clinical markers and patient demographics. Using a dataset comprising relevant health features such as blood pressure, cholesterol levels, and glucose, the study implements a complete data science pipeline involving data cleaning, exploratory analysis, and feature engineering. Machine learning algorithms are trained, optimized, and validated to identify the most effective classification approach. To ensure practical applicability, the final model is encapsulated within a functional API and containerized using Docker, providing a scalable, accessible solution for potential diagnostic support.
+
+## Distribution of tasks
+
+
+
+## Analysis and key results
+
+
+
+## Conclusions
+
+
