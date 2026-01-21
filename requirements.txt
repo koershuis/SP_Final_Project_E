@@ -1,0 +1,10 @@
+# --- API y Servidor ---
+fastapi
+uvicorn
+pydantic
+python-multipart
+
+# --- Ciencia de Datos ---
+pandas
+scikit-learn
+joblib
