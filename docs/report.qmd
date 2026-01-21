@@ -26,6 +26,9 @@ The primary objective of this project is to develop a robust and accurate predic
 
 ## Distribution of tasks
 
+The workload has been distributed equally among the seven group members. Contributor 1 was responsible for the initial data cleaning and summary, managing missing values, discarding irrelevant variables, and generating the first statistical overview through histograms and boxplots. Contributor 2 focused on data aggregation and visualization, developing functions to group key categories and creating scatterplots to analyze relationships between variables such as blood pressure and BMI. Contributor 3 handled data normalization—using techniques like z-score or min-max scaling—and conducted correlation analyses to eliminate redundant features.
+
+The predictive engine was built by Contributor 4, who implemented classification models such as KNN or Random Forest to identify high-risk patients. This was followed by Contributor 5, who established the validation strategy, selected the best-performing model, and designed the initial API schema. Contributor 6 then finalized the API by developing functional endpoints, integrating the trained model, and adding technical documentation. Finally, Contributor 7 managed the deployment phase by containerizing the application with Docker and hosting the API on a cloud server. To conclude the project, the entire team collaborated on refining the final model, drafting the comprehensive technical report, and producing a demonstration video of the live deployment.
 
 
 ## Analysis and key results
