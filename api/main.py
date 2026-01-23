@@ -7,7 +7,7 @@ import joblib
 import pandas as pd
 from contextlib import asynccontextmanager
 
-from src.cleanning import clean_data
+from src.cleaning import clean_data
 
 
 # --- PATH CONFIGURATION ---
