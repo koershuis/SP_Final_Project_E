@@ -1,0 +1,14 @@
+# --- API and Server ---
+fastapi
+uvicorn
+pydantic
+python-multipart
+
+# --- Data Science ---
+pandas
+scikit-learn
+joblib
+
+# --- Testing ---
+pytest
+httpx
