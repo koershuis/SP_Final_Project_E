@@ -82,6 +82,7 @@ In the final step, the API was deployed on Render. The GitHub repository was con
 ## Conclusions
 By leveraging a comprehensive data science pipeline, ranging from meticulous clinical data preprocessing to the optimization of machine learning algorithms, this project developed a reliable predictive tool for cardiovascular risk assessment.
 The final result is a functional, containerized API that allows users to interact with a high-performance Random Forest model from any environment. By inputting specific patient markers, the system provides an immediate classification of high-risk or low-risk status, demonstrating how integrated AI solutions can be transformed into accessible, scalable, and practical tools for clinical decision support.
+
 ## Link to the API
 
 https://heart-disease-api-fpqb.onrender.com/docs#/
