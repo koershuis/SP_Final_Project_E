@@ -18,7 +18,7 @@ from sklearn.ensemble import RandomForestClassifier
 # -----------------------------
 # Configuration
 # -----------------------------
-DATA_PATH = "data/05_validation/aggregated_dataframe.csv"
+DATA_PATH = "data/04_aggregated/aggregated_dataframe.csv"
 TARGET_COL = "TenYearCHD"
 RANDOM_STATE = 42
 
