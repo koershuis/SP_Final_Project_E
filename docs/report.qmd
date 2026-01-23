@@ -85,5 +85,11 @@ The final result is a functional, containerized API that allows users to interac
 
 ## Link to the API
 
-https://heart-disease-api-fpqb.onrender.com/docs#/
+https://heart-disease-api-fpqb.onrender.com/docs#
+
+## Link to the GitHub Repository
+
+https://github.com/koershuis/SP_Final_Project_E
+
+
 
