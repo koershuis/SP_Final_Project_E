@@ -23,21 +23,21 @@ def client():
 # --- TEST 1: Caso Sano ---
 def test_predict_low_risk(client): # <--- Pasamos 'client' como argumento
     healthy_patient = {
-        "sex": "F",
-        "age": 25,
-        "education": 4.0,
+        "sex": "M",
+        "age": 20,
+        "education": 2.0,
         "currentSmoker": "No",
         "cigsPerDay": 0.0,
         "BPMeds": 0.0,
         "prevalentStroke": 0,
         "prevalentHyp": 0,
         "diabetes": 0,
-        "totChol": 130.0,
-        "sysBP": 100.0,
+        "totChol": 100.0,
+        "sysBP": 120.0,
         "diaBP": 60.0,
-        "BMI": 19.5,
-        "heartRate": 55.0,
-        "glucose": 70.0
+        "BMI": 19.0,
+        "heartRate": 85.0,
+        "glucose": 75.0
     }
     
     response = client.post("/predict", json=healthy_patient)
