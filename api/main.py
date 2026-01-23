@@ -1,42 +1,49 @@
+import os
+import sys
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import joblib
 import pandas as pd
-import os
+from contextlib import asynccontextmanager
 
 from src.cleanning import clean_data
 
-# 1. Initialize application
+
+# --- PATH CONFIGURATION ---
+# We add the root folder to the system to find 'src'
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+
+
+# --- MODEL MANAGEMENT ---
+ml_models = {}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 1. Load model when turning on
+    model_path = os.path.join(BASE_DIR, "models", "best_model.joblib")
+    
+    if os.path.exists(model_path):
+        ml_models["pipeline"] = joblib.load(model_path)
+        print(f"Model loaded successfully from: {model_path}")
+    else:
+        print(f"ERROR: Model not found in {model_path}")    
+    yield
+    
+    # 2. clean memory when turning off
+    ml_models.clear()
+    print("API apagada.")
+
+# --- INITIALIZE FASTAPI APP ---
 app = FastAPI(
     title="Heart Disease Prediction API",
     description="API for predicting 10-year coronary heart disease risk based on patient data",
-    version="1.0"
+    version="2.0",
+    lifespan=lifespan
 )
 
-# 2. Load model and scaler
-# It is necessary to load also 'scaler' because
-# new data must be normalize in the same way as training.
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-model_path = os.path.join(BASE_DIR, "models", "model.pkl")
-scaler_path = os.path.join(BASE_DIR, "models", "scaler.pkl")
-
-model = None
-scaler = None
-
-# We use this event to load the models when the API is turned on.
-@app.on_event("startup")
-def load_models():
-    global model, scaler
-    if os.path.exists(model_path) and os.path.exists(scaler_path):
-        model = joblib.load(model_path)
-        scaler = joblib.load(scaler_path)
-        print("✅ Model correctly loaded.")
-    else:
-        print("⚠️ WARNING: model.pkl or scaler.pkl not found in the models/ folder.")
-        print("The API will work but will fail when attempting to predict.")
-
-# 3. Define the "order" (What information should the user send?)
-# These are the exact columns (except for Target).
+# --- DATA DEFINITION (INPUT) ---
 class PatientInput(BaseModel):
     sex: str              # "M" o "F"
     age: int
@@ -56,70 +63,71 @@ class PatientInput(BaseModel):
 
     # This serves to display an example in the automatic documentation.
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "sex": "M",
-                "age": 48,
-                "education": 1.0,
+                "education": 2.0,
+                "age": 50,
                 "currentSmoker": "Yes",
                 "cigsPerDay": 20.0,
                 "BPMeds": 0.0,
                 "prevalentStroke": 0,
                 "prevalentHyp": 0,
                 "diabetes": 0,
-                "totChol": 245.0,
-                "sysBP": 127.5,
+                "totChol": 250.0,
+                "sysBP": 130.0,
                 "diaBP": 80.0,
-                "BMI": 25.34,
+                "BMI": 28.0,
                 "heartRate": 75.0,
-                "glucose": 70.0
+                "glucose": 85.0
             }
         }
 
-# 4. Test route (to see if the API is live)
-@app.get("/")
-def home():
-    return {"status": "online", "message": "Welcome to the Heart Disease Prediction API."}
-
-# 5. The Primary Endpoint: Predicting
+# --- PREDICTION ENDPOINT ---
 @app.post("/predict")
 def predict_heart_disease(patient: PatientInput):
-
-    if not model or not scaler:
-        raise HTTPException(status_code=500, detail="The model is not loaded. Run validation.py first.")
+    pipeline = ml_models.get("pipeline")
+    if not pipeline:
+        raise HTTPException(status_code=503, detail="The model is not loaded.")
 
     # 1. Convert what arrives (JSON) to Pandas DataFrame
-    input_data = patient.dict()
+    input_data = patient.model_dump()
     df = pd.DataFrame([input_data])
 
     # 2. Cleaning / Preprocessing
     try:
         df_clean = clean_data(df)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error in data cleaning: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Error in data cleaning: {str(e)}")
 
-    # 3. Ensure column order (Critical)
-    column_order = ['sex', 'age', 'education', 'currentSmoker', 'cigsPerDay', 
-                    'BPMeds', 'prevalentStroke', 'prevalentHyp', 'diabetes', 
-                    'totChol', 'sysBP', 'diaBP', 'BMI', 'heartRate', 'glucose']
-    
-    try:
-        df = df[column_order]
-    except KeyError as e:
-        raise HTTPException(status_code=400, detail=f"Error en las columnas: {e}")
+    # 3. Verification after cleaning
+    if df_clean.empty:
+        raise HTTPException(status_code=400, detail="The data provided was discarded due to cleaning (possible null values in BMI or HeartRate).")
 
-    # 4. Scale the data (Put it on the same scale as the training)
-    data_scaled = scaler.transform(df)
+    # 4. Ordering columns
+    expected_cols = ['sex', 'age', 'currentSmoker', 
+                     'BPMeds', 'prevalentStroke', 'prevalentHyp', 'diabetes', 'cigsPerDay', 
+                     'totChol', 'sysBP', 'BMI', 'heartRate', 'glucose']
+    df_final = df_clean[expected_cols]
 
     # 5. Predict
-    prediction = model.predict(data_scaled)      # Returns [0] or [1]
-    probability = model.predict_proba(data_scaled) # Returns probabilities [[0.2, 0.8]]
-
-    # 6. Return reply
-    risk_prob = probability[0][1] #  Probability of class 1 (high risk)
+    try:
+        prediction = pipeline.predict(df_final)[0]      # Returns [0] or [1]
+        probability = pipeline.predict_proba(df_final)[0] # Returns probabilities [Class0, Class1]
+        risk_percent = round(probability[1] * 100, 2)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error during prediction: {str(e)}")
     
+    # 6. Return reply
     return {
-        "prediction_class": int(prediction[0]),
-        "risk_probability": float(risk_prob),
-        "diagnosis": "High Risk of Coronary Heart Disease" if prediction[0] == 1 else "Low Risk"
+        "prediction": int(prediction),
+        "risk_probability": f"{risk_percent}%",
+        "diagnosis": "High Risk of Coronary Heart Disease" if prediction == 1 else "Low Risk"
     }
+
+
+# --- STARTUP (For Docker and testing) ---
+if __name__ == "__main__":
+    import uvicorn
+    # 0.0.0.0 allows access from outside the container
+    uvicorn.run(app, host="0.0.0.0", port=8000)

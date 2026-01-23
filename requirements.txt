@@ -1,10 +1,14 @@
-# --- API y Servidor ---
+# --- API and Server ---
 fastapi
 uvicorn
 pydantic
 python-multipart
 
-# --- Ciencia de Datos ---
+# --- Data Science ---
 pandas
 scikit-learn
 joblib
+
+# --- Testing ---
+pytest
+httpx
